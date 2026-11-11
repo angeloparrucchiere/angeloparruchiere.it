@@ -1,0 +1,27 @@
+﻿# Tiene sveglio il progetto Supabase sul piano Free.
+# Il piano Free mette in pausa i progetti dopo 7 giorni di inattivita.
+# Questo workflow tocca il progetto 2 volte a settimana eseguendo lavoro utile,
+# non un semplice ping a vuoto.
+#
+# Segreti richiesti (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_URL       - URL del progetto
+#   SUPABASE_ANON_KEY  - chiave pubblica, oppure service key per manutenzione
+
+name: supabase-keepalive
+
+on:
+  schedule:
+    # lunedi e giovedi alle 08:00 UTC
+    - cron: "0 8 * * 1,4"
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chiama la funzione di manutenzione
+        run: |
+          curl --fail --silent --show-error \
+            -X POST "${{ secrets.SUPABASE_URL }}/functions/v1/keepalive" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json"
